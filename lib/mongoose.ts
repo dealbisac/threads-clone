@@ -9,6 +9,10 @@ export const connectToDatabase = async () => {
     if(isConnected) return console.log("Already connected to database");
 
     try {
+        await mongoose.connect(process.env.MONGODB_URL);
+        
+        isConnected = true;
+        console.log("Connected to database");
     } catch (error) {
         console.log(error);
     }
