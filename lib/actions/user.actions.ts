@@ -98,12 +98,12 @@ export async function fetchUsers({
     searchString,
     pageNumber = 1,
     pageSize = 20,
-    sortBy = "desc",
+    sortBy = "desc"
 }: {
-    userId: String,
-    searchString?: String,
-    pageNumber?: Number,
-    pageSize?: Number,
+    userId: string,
+    searchString?: string,
+    pageNumber?: number,
+    pageSize?: number,
     sortBy?: SortOrder
 }) {
     connectToDatabase();
@@ -144,3 +144,32 @@ export async function fetchUsers({
     }
 }
 
+// Get Activity of user
+export async function getActivity(userId: String) {
+    connectToDatabase();
+
+    try {
+        // Find all threads authored by user with the given userId
+        const userThreads = await Thread.find({ author: userId })
+
+
+        // Collect all the child threads ids (replies) of the user's threads
+        const childThreadIds = userThreads.reduce((acc, userthread) => {
+            return acc.concat(userthread.children)
+        }, [] as string[]);
+
+        // Find all the replies of the user's threads
+        const replies = await Thread.find({
+            _id: { $in: childThreadIds },
+            author: { $ne: userId }
+        }).populate({
+            path: "author",
+            model: User,
+            select: "name image _id"
+        });
+
+        return replies;
+    } catch (error: any) {
+        throw new Error(`Failed to fetch user activity: ${error.message}`);
+    }
+}
