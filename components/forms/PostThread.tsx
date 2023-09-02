@@ -22,6 +22,8 @@ import { threadValidation } from "@/lib/validations/thread";
 import { Input } from "../ui/input";
 import { createThread } from "@/lib/actions/thread.actions";
 
+import { useOrganization } from "@clerk/nextjs";
+
 interface Props {
     user: {
         id: string,
@@ -39,6 +41,7 @@ interface Props {
 function PostThread({ userId }: { userId: string }) {
     const router = useRouter();
     const pathname = usePathname();
+    const { organization } = useOrganization();
 
     const form = useForm({
         resolver: zodResolver(threadValidation),
@@ -52,7 +55,7 @@ function PostThread({ userId }: { userId: string }) {
         await createThread({
             text: values.thread,
             author: userId,
-            communityID: null,
+            communityId: organization ? organization.id : null,
             path: pathname
         });
 
